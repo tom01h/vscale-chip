@@ -44,7 +44,7 @@ while(<>){
         $cs = -(hex($bc)+hex($addr0)+hex($addr1)+hex($type)
                 +hex($data0)+hex($data1)+hex($data2)+hex($data3));
 
-        printf ":$bc$addri$type$data0$data1$data2$data3%02x\n",($cs%256);
+#        printf ":$bc$addri$type$data0$data1$data2$data3%02x\n",($cs%256);
 #        printf "$data0$data1$data2$data3\n";
         printf D0 "$data0\n";
         printf D1 "$data1\n";

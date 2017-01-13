@@ -1,5 +1,5 @@
 PREFIX  = /opt/riscv
-ARCH    = riscv64-unknown-elf
+ARCH    = riscv32-unknown-elf
 BINDIR  = $(PREFIX)/bin
 ADDNAME = $(ARCH)-
 
@@ -18,7 +18,7 @@ OBJS += lib.o serial.o xmodem.o elf.o
 
 TARGET = kzload
 
-CFLAGS = -Wall -m32 -nostdinc -nostdlib -fno-builtin
+CFLAGS = -Wall -nostdinc -nostdlib -fno-builtin
 CFLAGS += -I.
 #CFLAGS += -g
 CFLAGS += -O
@@ -35,6 +35,9 @@ $(TARGET) :	$(OBJS)
 		$(CC) $(OBJS) -o $(TARGET) $(CFLAGS) $(LFLAGS)
 		cp $(TARGET) $(TARGET).elf
 		$(STRIP) $(TARGET)
+		$(OBJCOPY) -O ihex kzload.elf kzload.ihex
+		./ramcnv.pl kzload.ihex
+		mv ram.data? ../../verilog/
 
 .c.o :		$<
 		$(CC) -c $(CFLAGS) $<
@@ -48,4 +51,4 @@ $(TARGET).mot :	$(TARGET)
 image :		$(TARGET).mot
 
 clean :
-		rm -f $(OBJS) $(TARGET) $(TARGET).elf $(TARGET).mot
+		rm -f $(OBJS) $(TARGET) $(TARGET).elf $(TARGET).mot $(TARGET).ihex ../../verilog/ram.data?

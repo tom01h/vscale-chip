@@ -88,13 +88,14 @@ int main(void)
     } else if (!strcmp(buf, "run")) { /* ELF形式ファイルの実行 */
       entry_point = elf_load(loadbuf); /* メモリ上に展開(ロード) */
       if (!entry_point) {
-	puts("run error!\n");
+        puts("run error!\n");
       } else {
-	puts("starting from entry point: ");
-	putxval((unsigned long)entry_point, 0);
-	puts("\n");
-	f = (void (*)(void))entry_point;
-	f(); /* ここで，ロードしたプログラムに処理を渡す */
+        puts("starting from entry point: ");
+        putxval((unsigned long)entry_point, 0);
+        puts("\n");
+        f = (void (*)(void))entry_point;
+        //	f(); /* ここで，ロードしたプログラムに処理を渡す */
+        dump(entry_point, 256); //TEMP//TEMP//
 	/* ここには返ってこない */
       }
     } else {

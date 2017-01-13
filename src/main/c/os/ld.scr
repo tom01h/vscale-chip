@@ -6,7 +6,7 @@ MEMORY
 {
 	ramall(rwx)	: o = 0x00001800, l = 0x00007000 /* 26KB */
 	rami(rwx)	: o = 0x00001900, l = 0x00002700 /* 10KB */
-	ramd(rwx)	: o = 0x00004000, l = 0x00003f00 /* 16KB */
+	ramd(rwx)	: o = 0x00004100, l = 0x00003f00 /* 16KB */
 	stack(rw)	: o = 0x00007f00, l = 0x00000000 /* end of RAM */
 }
 
