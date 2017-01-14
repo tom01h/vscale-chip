@@ -94,9 +94,9 @@ int main(void)
         putxval((unsigned long)entry_point, 0);
         puts("\n");
         f = (void (*)(void))entry_point;
-        //	f(); /* ここで，ロードしたプログラムに処理を渡す */
-        dump(entry_point, 256); //TEMP//TEMP//
-	/* ここには返ってこない */
+        f(); /* ここで，ロードしたプログラムに処理を渡す */
+        //        dump(entry_point, 256); //TEMP//TEMP//
+        /* ここには返ってこない */
       }
     } else {
       puts("unknown.\n");
