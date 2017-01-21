@@ -37,11 +37,12 @@ VERILATOR_OPTS = \
 	-Wno-UNUSED \
 	-Wno-BLKSEQ \
 	--cc \
-	-I$(V_SRC_DIR) \
+	-I$(V_CORE_DIR) \
 	+1364-2001ext+v \
 	-Wno-fatal \
 	--Mdir sim \
 	--trace \
+	--l2-name v \
 
 VERILATOR_MAKE_OPTS = OPT_FAST="-O3"
 
@@ -53,7 +54,7 @@ VCS_OPTS = -PP -notice -line +lint=all,noVCDE,noUI +v2k -timescale=1ns/10ps -qui
 	+vc+list -CC "-I$(VCS_HOME)/include" \
 	-CC "-std=c++11" \
 
-MAX_CYCLES = 1000000
+MAX_CYCLES = 10000
 
 SIMV_OPTS = -k $(OUT_DIR)/ucli.key -q
 
@@ -76,6 +77,7 @@ DESIGN_SRCS = $(addprefix $(V_SRC_DIR)/, \
 vscale_chip.v \
 vscale_xbar.v \
 ahbmem.v \
+uart_sim.v \
 uart/sasc_brg.v \
 uart/sasc_fifo4.v \
 uart/sasc_top.v \
@@ -89,11 +91,11 @@ VCS_TOP = $(V_TEST_DIR)/vscale_hex_tb.v
 
 VERILATOR_CPP_TB = $(CXX_TEST_DIR)/vscale_hex_tb.cpp
 
-VERILATOR_TOP = $(V_TEST_DIR)/vscale_verilator_top.v
+VERILATOR_TOP = $(V_TEST_DIR)/vscale_verilator_top.sv
 
 MODELSIM_TOP = $(V_TEST_DIR)/vscale_hex_tb_modelsim.sv
 
-HDRS = $(addprefix $(V_SRC_DIR)/, \
+HDRS = $(addprefix $(V_CORE_DIR)/, \
 vscale_ctrl_constants.vh \
 rv32_opcodes.vh \
 vscale_alu_ops.vh \
@@ -116,6 +118,8 @@ verilator-sim: $(SIM_DIR)/Vvscale_verilator_top
 
 verilator-run-asm-tests: $(VERILATOR_VCD_FILES)
 
+verilator-board-test: tmp.vcd
+
 modelsim-sim: $(MODELSIM_DIR) $(MODELSIM_DIR)/_vmake
 
 modelsim-run-asm-tests: $(MODELSIM_WLF_FILES)
@@ -124,9 +128,17 @@ $(OUT_DIR)/%.vpd: $(MEM_DIR)/%.hex $(SIM_DIR)/simv
 	mkdir -p output
 	$(SIM_DIR)/simv $(SIMV_OPTS) +max-cycles=$(MAX_CYCLES) +loadmem=$< +vpdfile=$@ && [ $$PIPESTATUS -eq 0 ]
 
-$(OUT_DIR)/%.verilator.vcd: $(MEM_DIR)/%.hex $(SIM_DIR)/Vvscale_verilator_top
+tmp.vcd: src/main/c/bootload/kzload.ihex $(SIM_DIR)/Vvscale_verilator_top
+	cp src/main/c/bootload/kzload.ihex loadmem.ihex
+	touch ram.data3 ram.data2 ram.data1 ram.data0
+	$(SIM_DIR)/Vvscale_verilator_top +max-cycles=$(MAX_CYCLES) --vcdfile=$@
+	rm ram.data3 ram.data2 ram.data1 ram.data0
+
+$(OUT_DIR)/%.verilator.vcd: $(MEM_DIR)/%.ihex $(SIM_DIR)/Vvscale_verilator_top
 	mkdir -p output
-	$(SIM_DIR)/Vvscale_verilator_top +max-cycles=$(MAX_CYCLES) +loadmem=$< --vcdfile=$@ && [ $$PIPESTATUS -eq 0 ]
+	cp $< loadmem.ihex
+	$(SIM_DIR)/Vvscale_verilator_top +max-cycles=$(MAX_CYCLES) --vcdfile=$@ > log
+	mv log $@.log
 
 $(OUT_DIR)/%.wlf: $(MEM_DIR)/%.ihex $(MODELSIM_DIR)/_vmake
 	mkdir -p output
@@ -151,6 +163,6 @@ $(MODELSIM_DIR)/_vmake: $(MODELSIM_TOP) $(SIM_SRCS) $(DESIGN_SRCS) $(CORE_SRCS) 
 	$(VLOG) $(VLOG_OPTS) $(MODELSIM_TOP) $(SIM_SRCS) $(DESIGN_SRCS) $(CORE_SRCS)
 
 clean:
-	rm -rf $(SIM_DIR)/* $(OUT_DIR)/* $(MODELSIM_DIR)
+	rm -rf $(SIM_DIR)/* $(OUT_DIR)/* $(MODELSIM_DIR) tmp.vcd
 
 .PHONY: clean run-asm-tests verilator-run-asm-tests

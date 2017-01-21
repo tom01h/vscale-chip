@@ -5,7 +5,7 @@ make
 cd src/main/c/os/
 make
 ```
-build for ARTY
+build for ARTY (57776)
 ```
 prepare ../vscale
 open ARTY/vscale_chip.xpr by Vivado
@@ -22,11 +22,30 @@ flow none
 run on ARTY
 ```
 type load & sent src/main/c/os/kozos by XMODEM
-type run // NOT YET
+type run
 ```
-for simulation
+for simulation (verilator) (load is not supported yet)
 ```
-make modelsim-sim
+make verilator-sim
+make verilator-board-test
+```
+simulation log
+```
 cp src/main/c/bootload/kzload.ihex loadmem.ihex
-vsim.exe -c work.vscale_hex_tb -lib work -do "add wave -noupdate /vscale_hex_tb/* -recursive;add wave -noupdate /vscale_hex_tb/DUT/chip/vscale/pipeline/regfile/data;run 200ns;quit"
+touch ram.data3 ram.data2 ram.data1 ram.data0
+sim/Vvscale_verilator_top +max-cycles=10000 --vcdfile=tmp.vcd
+Running ...
+kzload (kozos boot loader) started.
+kzload> dump <- TYPE
+dump
+size: ffffffff
+no data.
+kzload> run <- TYPE
+run
+run error!
+kzload> aa <- TYPE
+aa
+unknown.
+kzload> q <- TYPE
+rm ram.data3 ram.data2 ram.data1 ram.data0
 ```

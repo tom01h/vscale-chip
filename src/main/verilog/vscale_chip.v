@@ -210,6 +210,28 @@ module vscale_chip
    uart uart(
              .hclk(clk),
              .hresetn(resetn),
+//             .hsel(ss_hsel&~ss_haddr[4]),
+             .hsel(1'b0),
+             .haddr(ss_haddr),
+             .hwrite(ss_hwrite),
+             .hsize(ss_hsize),
+             .hburst(ss_hburst),
+             .hmastlock(ss_hmastlock),
+             .hprot(ss_hprot),
+             .htrans(ss_htrans),
+             .hwdata(ss_hwdata),
+//             .hrdata(ss_hrdata),
+             .hrdata(),
+             .hready(ss_hready),
+             .hresp(ss_hresp),
+             .RXD(RXD),
+             .TXD(TXD)
+             );
+
+   uart_sim uart_sim(
+             .hclk(clk),
+             .hresetn(resetn),
+//             .hsel(ss_hsel&ss_haddr[4]),
              .hsel(ss_hsel),
              .haddr(ss_haddr),
              .hwrite(ss_hwrite),
@@ -220,10 +242,9 @@ module vscale_chip
              .htrans(ss_htrans),
              .hwdata(ss_hwdata),
              .hrdata(ss_hrdata),
-             .hready(ss_hready),
-             .hresp(ss_hresp),
-             .RXD(RXD),
-             .TXD(TXD)
+//             .hrdata(),
+             .hready(),
+             .hresp()
              );
 
 endmodule // vscale_sim_top
