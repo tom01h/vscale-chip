@@ -1,3 +1,5 @@
+### Arty FPGA Board (57776ca)
+
 Boot ROM & Program
 ```
 cd src/main/c/bootload/
@@ -5,13 +7,13 @@ make
 cd src/main/c/os/
 make
 ```
-build for ARTY (57776)
+Build
 ```
 prepare ../vscale
 open ARTY/vscale_chip.xpr by Vivado
 Generate bitstream & Program device
 ```
-set serial terminal
+Set serial terminal
 ```
 19200 bps
 data 8bit
@@ -19,12 +21,22 @@ parity none
 stop 1bit
 flow none
 ```
-run on ARTY
+Run
 ```
 type load & sent src/main/c/os/kozos by XMODEM
 type run
 ```
-for simulation (verilator) (load is not supported yet)
+### Simulation (a59e919)
+load is not supported yet
+
+Boot ROM & Program
+```
+cd src/main/c/bootload/
+make
+cd src/main/c/os/
+make
+```
+Build & Run
 ```
 make verilator-sim
 make verilator-board-test
