@@ -27,6 +27,7 @@ VSIM = vsim.exe
 VSIM_OPTS = -c work.vscale_hex_tb -lib work -do " \
 	add wave -noupdate /vscale_hex_tb/* -recursive; \
 	add wave -noupdate /vscale_hex_tb/DUT/chip/vscale/pipeline/regfile/data; \
+	add wave -noupdate /vscale_hex_tb/DUT/chip/vscale/pipeline/fregfile/data; \
 	run 30ns; quit"
 
 VERILATOR = verilator
@@ -64,8 +65,7 @@ vscale_hasti_bridge.v \
 vscale_pipeline.v \
 vscale_ctrl.v \
 vscale_regfile.v \
-vscale_src_a_mux.v \
-vscale_src_b_mux.v \
+vscale_fregfile.v \
 vscale_imm_gen.v \
 vscale_alu.v \
 vscale_mul_div.v \
@@ -137,8 +137,10 @@ tmp.vcd: src/main/c/bootload/kzload.ihex $(SIM_DIR)/Vvscale_verilator_top
 $(OUT_DIR)/%.verilator.vcd: $(MEM_DIR)/%.ihex $(SIM_DIR)/Vvscale_verilator_top
 	mkdir -p output
 	cp $< loadmem.ihex
+	touch ram.data3 ram.data2 ram.data1 ram.data0
 	$(SIM_DIR)/Vvscale_verilator_top +max-cycles=$(MAX_CYCLES) --vcdfile=$@ > log
 	mv log $@.log
+	rm ram.data3 ram.data2 ram.data1 ram.data0
 
 $(OUT_DIR)/%.wlf: $(MEM_DIR)/%.ihex $(MODELSIM_DIR)/_vmake
 	mkdir -p output

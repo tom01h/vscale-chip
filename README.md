@@ -1,6 +1,7 @@
-### Arty FPGA Board (57776ca)
+### Arty FPGA Board
 
-Boot ROM & Program
+Boot ROM & Program  
+select UART in defines.h (#define SERIAL_DEFAULT_DEVICE 0) in src/main/c/{bootrom,os}
 ```
 cd src/main/c/bootload/
 make
@@ -26,12 +27,12 @@ Run
 type load & sent src/main/c/os/kozos by XMODEM
 type run
 ```
-### Simulation (a59e919)
-If verilator 3.882 or earlier, remove "--l2-name v" option in Makefile
+### Simulation
+If verilator 3.882 or earlier, remove "--l2-name v" option in Makefile  
+XMODEM (load command) is not supported yet
 
-load command is not supported yet
-
-Boot ROM & Program
+Boot ROM & Program  
+select UART_SIM in defines.h (#define SERIAL_DEFAULT_DEVICE 1) in src/main/c/{bootrom,os}
 ```
 cd src/main/c/bootload/
 make

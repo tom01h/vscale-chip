@@ -207,11 +207,17 @@ module vscale_chip
                .hresp(ds_hresp)
                );
 
+   wire [`HASTI_BUS_WIDTH-1:0]   uart_hrdata;
+   wire [`HASTI_BUS_WIDTH-1:0]   uart_sim_hrdata;
+   reg                           uart_sel;
+   always @ (posedge clk) //TEMP//TEMP//hready
+     uart_sel <= ss_haddr[4];
+   assign ss_hrdata = (uart_sel) ? uart_sim_hrdata : uart_hrdata ;
+
    uart uart(
              .hclk(clk),
              .hresetn(resetn),
-//             .hsel(ss_hsel&~ss_haddr[4]),
-             .hsel(1'b0),
+             .hsel(ss_hsel&~ss_haddr[4]),
              .haddr(ss_haddr),
              .hwrite(ss_hwrite),
              .hsize(ss_hsize),
@@ -220,8 +226,7 @@ module vscale_chip
              .hprot(ss_hprot),
              .htrans(ss_htrans),
              .hwdata(ss_hwdata),
-//             .hrdata(ss_hrdata),
-             .hrdata(),
+             .hrdata(uart_hrdata),
              .hready(ss_hready),
              .hresp(ss_hresp),
              .RXD(RXD),
@@ -231,8 +236,7 @@ module vscale_chip
    uart_sim uart_sim(
              .hclk(clk),
              .hresetn(resetn),
-//             .hsel(ss_hsel&ss_haddr[4]),
-             .hsel(ss_hsel),
+             .hsel(ss_hsel&ss_haddr[4]),
              .haddr(ss_haddr),
              .hwrite(ss_hwrite),
              .hsize(ss_hsize),
@@ -241,8 +245,7 @@ module vscale_chip
              .hprot(ss_hprot),
              .htrans(ss_htrans),
              .hwdata(ss_hwdata),
-             .hrdata(ss_hrdata),
-//             .hrdata(),
+             .hrdata(uart_sim_hrdata),
              .hready(),
              .hresp()
              );
