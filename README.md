@@ -28,8 +28,7 @@ type load & sent src/main/c/os/kozos by XMODEM
 type run
 ```
 ### Simulation
-If verilator 3.882 or earlier, remove "--l2-name v" option in Makefile  
-XMODEM (load command) is not supported yet
+If verilator 3.882 or earlier, remove "--l2-name v" option in Makefile
 
 Boot ROM & Program  
 select UART_SIM in defines.h (#define SERIAL_DEFAULT_DEVICE 1) in src/main/c/{bootrom,os}
