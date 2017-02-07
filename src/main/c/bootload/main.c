@@ -50,7 +50,11 @@ static void wait()
 {
   volatile long i;
 //for (i = 0; i <  300000; i++)
+#if SERIAL_DEFAULT_DEVICE
+  for (i = 0; i < 30; i++)
+#else
   for (i = 0; i < 3000000; i++)
+#endif
     ;
 }
 

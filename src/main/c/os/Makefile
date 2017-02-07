@@ -1,5 +1,5 @@
 PREFIX  = /opt/riscv
-ARCH    = riscv64-unknown-elf
+ARCH    = riscv32-unknown-elf
 BINDIR  = $(PREFIX)/bin
 ADDNAME = $(ARCH)-
 
@@ -18,7 +18,7 @@ OBJS += lib.o serial.o
 
 TARGET = kozos
 
-CFLAGS = -Wall -m32 -nostdinc -nostdlib -fno-builtin
+CFLAGS = -Wall -nostdinc -nostdlib -fno-builtin
 CFLAGS += -I.
 #CFLAGS += -g
 CFLAGS += -O

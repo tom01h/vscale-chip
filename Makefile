@@ -55,7 +55,7 @@ VCS_OPTS = -PP -notice -line +lint=all,noVCDE,noUI +v2k -timescale=1ns/10ps -qui
 	+vc+list -CC "-I$(VCS_HOME)/include" \
 	-CC "-std=c++11" \
 
-MAX_CYCLES = 10000
+MAX_CYCLES = 180000
 
 SIMV_OPTS = -k $(OUT_DIR)/ucli.key -q
 
@@ -130,6 +130,7 @@ $(OUT_DIR)/%.vpd: $(MEM_DIR)/%.hex $(SIM_DIR)/simv
 
 tmp.vcd: src/main/c/bootload/kzload.ihex $(SIM_DIR)/Vvscale_verilator_top
 	cp src/main/c/bootload/kzload.ihex loadmem.ihex
+	cp src/main/c/os/kozos xmodem.dat
 	touch ram.data3 ram.data2 ram.data1 ram.data0
 	$(SIM_DIR)/Vvscale_verilator_top +max-cycles=$(MAX_CYCLES) --vcdfile=$@
 	rm ram.data3 ram.data2 ram.data1 ram.data0
@@ -165,6 +166,6 @@ $(MODELSIM_DIR)/_vmake: $(MODELSIM_TOP) $(SIM_SRCS) $(DESIGN_SRCS) $(CORE_SRCS) 
 	$(VLOG) $(VLOG_OPTS) $(MODELSIM_TOP) $(SIM_SRCS) $(DESIGN_SRCS) $(CORE_SRCS)
 
 clean:
-	rm -rf $(SIM_DIR)/* $(OUT_DIR)/* $(MODELSIM_DIR) tmp.vcd
+	rm -rf $(SIM_DIR)/* $(OUT_DIR)/* $(MODELSIM_DIR) tmp.vcd loadmem.ihex xmodem.dat
 
 .PHONY: clean run-asm-tests verilator-run-asm-tests

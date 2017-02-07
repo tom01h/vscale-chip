@@ -41,26 +41,28 @@ make
 ```
 Build & Run
 ```
+prepare ../vscale
 make verilator-sim
 make verilator-board-test
 ```
 simulation log
 ```
 cp src/main/c/bootload/kzload.ihex loadmem.ihex
+cp src/main/c/os/kozos xmodem.dat
 touch ram.data3 ram.data2 ram.data1 ram.data0
-sim/Vvscale_verilator_top +max-cycles=10000 --vcdfile=tmp.vcd
+sim/Vvscale_verilator_top +max-cycles=180000 --vcdfile=tmp.vcd
 Running ...
 kzload (kozos boot loader) started.
-kzload> dump <- TYPE
-dump
-size: ffffffff
-no data.
+kzload> load <- TYPE
+load
+XMODEM receive succeeded.
 kzload> run <- TYPE
 run
-run error!
-kzload> aa <- TYPE
-aa
-unknown.
-kzload> q <- TYPE
+starting from entry point: 1900
+Hello World!
+> echo aaa <- TYPE
+echo aaa
+ aaa
+> q <- TYPE
 rm ram.data3 ram.data2 ram.data1 ram.data0
 ```

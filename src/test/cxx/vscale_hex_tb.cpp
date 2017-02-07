@@ -79,25 +79,106 @@ int main(int argc, char **argv, char **env) {
   }
 
   vluint64_t main_time = 0;
-  int keyin;
+  int keyin, xmodem, block, check, num;
+  xmodem = -6;
+  char buf[128];
+  FILE *fp;
   while (!Verilated::gotFinish()) {
     verilator_top->reset = (main_time < 1000) ? 1 : 0;
     if (main_time % 100 == 0){
       verilator_top->clk = 0;
-      if((verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__sel)&
-         (verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__wr)&
-         (verilator_top->v__DOT__DUT__DOT__chip__DOT__uart__DOT__address==2)){
-        putc((char)verilator_top->v__DOT__DUT__DOT__chip__DOT__ss_hwdata, stdout);
-      }
-      if((verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__sel)&
-         (~verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__wr)&
-         (verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__cnt==0)&
-         (verilator_top->v__DOT__DUT__DOT__chip__DOT__uart__DOT__address==1)){
-        keyin = getc(stdin);
-        if(keyin=='q'){break;}
-        verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__dout_o = keyin;
-        verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__empty_o = 0;
-        verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__cnt = 3;
+      if((xmodem == -5)|(xmodem == -6)){ //NOP
+        if((verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__sel)&
+           (verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__wr)&
+           (verilator_top->v__DOT__DUT__DOT__chip__DOT__uart__DOT__address==2)){
+          putc((char)verilator_top->v__DOT__DUT__DOT__chip__DOT__ss_hwdata, stdout);
+        }
+        if((verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__sel)&
+           (~verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__wr)&
+           (verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__cnt==0)&
+           (verilator_top->v__DOT__DUT__DOT__chip__DOT__uart__DOT__address==1)){
+          keyin = getc(stdin);
+          if(keyin=='q'){break;}
+          else if(keyin=='d'){xmodem = -5;}
+          else if((keyin=='\n')&(xmodem==-5)){xmodem = -4;}
+          else{xmodem = -6;}
+          verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__dout_o = keyin;
+          verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__empty_o = 0;
+          verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__cnt = 3;
+        }
+      }else if(xmodem == -4){ // wait NAK
+        if((verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__sel)&
+           (verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__wr)&
+           (verilator_top->v__DOT__DUT__DOT__chip__DOT__uart__DOT__address==2)&
+           (verilator_top->v__DOT__DUT__DOT__chip__DOT__ss_hwdata==0x15)){
+          xmodem = -3;
+          block = 1;
+          fp = fopen("xmodem.dat", "rb");
+        }
+      }else if(xmodem == -3){ // send SOH
+        if(verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__empty_o==1){
+          verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__dout_o = 0x01;
+          verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__empty_o = 0;
+          xmodem = -2;
+        }
+      }else if(xmodem == -2){ // send block
+        if(verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__empty_o==1){
+          verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__dout_o = block;
+          verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__empty_o = 0;
+          xmodem = -1;
+        }
+      }else if(xmodem == -1){ // send block bar
+        if(verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__empty_o==1){
+          verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__dout_o = ~block;
+          verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__empty_o = 0;
+          xmodem = 0;
+          num = fread(&buf, 1 ,128 ,fp);
+          check = 0;
+        }
+      }else if((xmodem >=0) && (xmodem<128)){ // send data
+        if(verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__empty_o==1){
+          if(xmodem<num){
+            verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__dout_o = buf[xmodem];
+            check += buf[xmodem];
+          }else{
+            verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__dout_o = 0x1a;
+            check += 0x1a;
+          }
+          verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__empty_o = 0;
+          xmodem++;
+        }
+      }else if(xmodem == 128){ // send check sum
+        if(verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__empty_o==1){
+          verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__dout_o = check;
+          verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__empty_o = 0;
+          xmodem = 129;
+        }
+      }else if(xmodem == 129){ // wait ACK
+        if((verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__sel)&
+           (verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__wr)&
+           (verilator_top->v__DOT__DUT__DOT__chip__DOT__uart__DOT__address==2)&
+           (verilator_top->v__DOT__DUT__DOT__chip__DOT__ss_hwdata==0x06)){
+          if(num == 128){
+            xmodem = -3;
+            block++;
+          }else{
+            xmodem = 130;
+          }
+        }
+      }else if(xmodem == 130){ // send EOT
+        if(verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__empty_o==1){
+          verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__dout_o = 0x04;
+          verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__empty_o = 0;
+          verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__cnt = 3;
+          xmodem = 131;
+        }
+      }else if(xmodem == 131){ // wait ACK
+        if((verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__sel)&
+           (verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__wr)&
+           (verilator_top->v__DOT__DUT__DOT__chip__DOT__uart__DOT__address==2)&
+           (verilator_top->v__DOT__DUT__DOT__chip__DOT__ss_hwdata==0x06)){
+          xmodem = -6;
+        }
       }
     }
     if (main_time % 100 == 50)
