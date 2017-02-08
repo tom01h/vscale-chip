@@ -53,14 +53,12 @@ sim/Vvscale_verilator_top +max-cycles=180000 --vcdfile=tmp.vcd
 Running ...
 kzload (kozos boot loader) started.
 kzload> load <- TYPE
-load
+
 XMODEM receive succeeded.
 kzload> run <- TYPE
-run
 starting from entry point: 1900
 Hello World!
 > echo aaa <- TYPE
-echo aaa
  aaa
 > q <- TYPE
 rm ram.data3 ram.data2 ram.data1 ram.data0

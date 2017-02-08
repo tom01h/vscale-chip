@@ -6,6 +6,8 @@ include $(VSCALE_DIR)/Makefrag
 
 V_CORE_DIR = $(VSCALE_DIR)/src/main/verilog
 
+V_CTEST_DIR = $(VSCALE_DIR)/src/test/verilog
+
 V_SRC_DIR = src/main/verilog
 
 V_TEST_DIR = src/test/verilog
@@ -21,7 +23,7 @@ OUT_DIR = output
 MODELSIM_DIR = work
 
 VLOG = vlog.exe
-VLOG_OPTS = +incdir+$(V_CORE_DIR)
+VLOG_OPTS = +incdir+$(V_CORE_DIR) +incdir+$(V_CTEST_DIR)
 VLIB = vlib.exe
 VSIM = vsim.exe
 VSIM_OPTS = -c work.vscale_hex_tb -lib work -do " \
@@ -39,6 +41,7 @@ VERILATOR_OPTS = \
 	-Wno-BLKSEQ \
 	--cc \
 	-I$(V_CORE_DIR) \
+	-I$(V_CTEST_DIR) \
 	+1364-2001ext+v \
 	-Wno-fatal \
 	--Mdir sim \
@@ -141,6 +144,7 @@ $(OUT_DIR)/%.verilator.vcd: $(MEM_DIR)/%.ihex $(SIM_DIR)/Vvscale_verilator_top
 	touch ram.data3 ram.data2 ram.data1 ram.data0
 	$(SIM_DIR)/Vvscale_verilator_top +max-cycles=$(MAX_CYCLES) --vcdfile=$@ > log
 	mv log $@.log
+	mv trace.log $@.trc
 	rm ram.data3 ram.data2 ram.data1 ram.data0
 
 $(OUT_DIR)/%.wlf: $(MEM_DIR)/%.ihex $(MODELSIM_DIR)/_vmake
@@ -149,6 +153,7 @@ $(OUT_DIR)/%.wlf: $(MEM_DIR)/%.ihex $(MODELSIM_DIR)/_vmake
 	$(VSIM) $(VSIM_OPTS)
 	mv transcript $@.log
 	mv vsim.wlf $@
+	mv trace.log $@.trc
 
 $(SIM_DIR)/simv: $(VCS_TOP) $(SIM_SRCS) $(DESIGN_SRCS) $(CORE_SRCS) $(HDRS)
 	mkdir -p sim

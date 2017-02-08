@@ -83,6 +83,7 @@ int main(int argc, char **argv, char **env) {
   xmodem = -6;
   char buf[128];
   FILE *fp;
+  system("stty -echo -icanon min 1 time 0");
   while (!Verilated::gotFinish()) {
     verilator_top->reset = (main_time < 1000) ? 1 : 0;
     if (main_time % 100 == 0){
@@ -98,7 +99,7 @@ int main(int argc, char **argv, char **env) {
            (verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__cnt==0)&
            (verilator_top->v__DOT__DUT__DOT__chip__DOT__uart__DOT__address==1)){
           keyin = getc(stdin);
-          if(keyin=='q'){break;}
+          if(keyin=='q'){printf("q\n");break;}
           else if(keyin=='d'){xmodem = -5;}
           else if((keyin=='\n')&(xmodem==-5)){xmodem = -4;}
           else{xmodem = -6;}
@@ -109,11 +110,14 @@ int main(int argc, char **argv, char **env) {
       }else if(xmodem == -4){ // wait NAK
         if((verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__sel)&
            (verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__wr)&
-           (verilator_top->v__DOT__DUT__DOT__chip__DOT__uart__DOT__address==2)&
-           (verilator_top->v__DOT__DUT__DOT__chip__DOT__ss_hwdata==0x15)){
-          xmodem = -3;
-          block = 1;
-          fp = fopen("xmodem.dat", "rb");
+           (verilator_top->v__DOT__DUT__DOT__chip__DOT__uart__DOT__address==2)){
+          if(verilator_top->v__DOT__DUT__DOT__chip__DOT__ss_hwdata==0x15){
+            xmodem = -3;
+            block = 1;
+            fp = fopen("xmodem.dat", "rb");
+          }else{
+            putc((char)verilator_top->v__DOT__DUT__DOT__chip__DOT__ss_hwdata, stdout);
+          }
         }
       }else if(xmodem == -3){ // send SOH
         if(verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__empty_o==1){
@@ -189,5 +193,6 @@ int main(int argc, char **argv, char **env) {
   }
   delete verilator_top;
   tfp->close();
+  system("stty echo -icanon min 1 time 0");
   exit(0);
 }
