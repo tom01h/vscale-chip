@@ -95,10 +95,12 @@ module vscale_xbar
    reg [2:0]  im_hsel_l, dm_hsel_l, sm_hsel_l;
 
    always @ (posedge hclk)
-     if(~hresetn) im_hsel_l <= 1'b0;
+     if(~hresetn) im_hsel_l <= 3'b000;
+     else if(im_htrans != `HASTI_TRANS_NONSEQ) im_hsel_l <= 3'b000;
      else if(im_hready) im_hsel_l <= im_hsel;
    always @ (posedge hclk)
-     if(~hresetn) dm_hsel_l <= 1'b0;
+     if(~hresetn) dm_hsel_l <= 3'b000;
+     else if(dm_htrans != `HASTI_TRANS_NONSEQ) dm_hsel_l <= 3'b000;
      else if(dm_hready) dm_hsel_l <= dm_hsel;
 //   always @ (posedge hclk)
 //     if(~hresetn) sm_hsel_l <= 1'b0;
@@ -132,11 +134,11 @@ module vscale_xbar
    assign ss_hwdata    = (~dm_hsel_l[2]) ? im_hwdata  : dm_hwdata;
    
    assign im_hrdata = (im_hsel_l[2]) ? ss_hrdata : (im_hsel_l[1]) ? ds_hrdata : is_hrdata;
-   assign im_hready = is_hready & ~(im_hsel_l[0] & dm_hsel_l[0]);  //TEMP//TEMP//
-   assign im_hresp  = is_hresp & im_hsel_l[0];
+   assign im_hready = ~((im_hsel[0] & dm_hsel[0])|(im_hsel[1] & dm_hsel[1]));
+   assign im_hresp  = 1'b0;
 
    assign dm_hrdata = (dm_hsel_l[2]) ? ss_hrdata : (dm_hsel_l[1]) ? ds_hrdata : is_hrdata;
-   assign dm_hready = is_hready;
-   assign dm_hresp  = is_hresp & im_hsel_l[1];
+   assign dm_hready = 1'b1;
+   assign dm_hresp  = 1'b0;
    
 endmodule // vscale_xbar
