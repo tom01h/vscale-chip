@@ -2,143 +2,109 @@
 
 module vscale_xbar
   (
-   input                           hclk,
-   input                           hresetn,
+   input                           clk,
+   input                           resetn,
 
-   input [`HASTI_ADDR_WIDTH-1:0]   im_haddr,
-   input                           im_hwrite,
-   input [`HASTI_SIZE_WIDTH-1:0]   im_hsize,
-   input [`HASTI_BURST_WIDTH-1:0]  im_hburst,
-   input                           im_hmastlock,
-   input [`HASTI_PROT_WIDTH-1:0]   im_hprot,
-   input [`HASTI_TRANS_WIDTH-1:0]  im_htrans,
-   input [`HASTI_BUS_WIDTH-1:0]    im_hwdata,
-   output [`HASTI_BUS_WIDTH-1:0]   im_hrdata,
-   output                          im_hready,
-   output                          im_hresp,
+   input [`HASTI_ADDR_WIDTH-1:0]   im_addr,
+   input                           im_read,
+   input                           im_write,
+   input [`HASTI_SIZE_WIDTH-1:0]   im_size,
+   input [`HASTI_BUS_WIDTH-1:0]    im_wdata,
+   output [`HASTI_BUS_WIDTH-1:0]   im_rdata,
+   output                          im_ready,
+   output                          im_resp,
 
-   input [`HASTI_ADDR_WIDTH-1:0]   dm_haddr,
-   input                           dm_hwrite,
-   input [`HASTI_SIZE_WIDTH-1:0]   dm_hsize,
-   input [`HASTI_BURST_WIDTH-1:0]  dm_hburst,
-   input                           dm_hmastlock,
-   input [`HASTI_PROT_WIDTH-1:0]   dm_hprot,
-   input [`HASTI_TRANS_WIDTH-1:0]  dm_htrans,
-   input [`HASTI_BUS_WIDTH-1:0]    dm_hwdata,
-   output [`HASTI_BUS_WIDTH-1:0]   dm_hrdata,
-   output                          dm_hready,
-   output                          dm_hresp,
+   input [`HASTI_ADDR_WIDTH-1:0]   dm_addr,
+   input                           dm_read,
+   input                           dm_write,
+   input [`HASTI_SIZE_WIDTH-1:0]   dm_size,
+   input [`HASTI_BUS_WIDTH-1:0]    dm_wdata,
+   output [`HASTI_BUS_WIDTH-1:0]   dm_rdata,
+   output                          dm_ready,
+   output                          dm_resp,
 
-   output                          is_hsel,
-   output [`HASTI_ADDR_WIDTH-1:0]  is_haddr,
-   output                          is_hwrite,
-   output [`HASTI_SIZE_WIDTH-1:0]  is_hsize,
-   output [`HASTI_BURST_WIDTH-1:0] is_hburst,
-   output                          is_hmastlock,
-   output [`HASTI_PROT_WIDTH-1:0]  is_hprot,
-   output [`HASTI_TRANS_WIDTH-1:0] is_htrans,
-   output [`HASTI_BUS_WIDTH-1:0]   is_hwdata,
-   input [`HASTI_BUS_WIDTH-1:0]    is_hrdata,
-   input                           is_hready,
-   input                           is_hresp,
+   output                          is_sel,
+   output [`HASTI_ADDR_WIDTH-1:0]  is_addr,
+   output                          is_read,
+   output                          is_write,
+   output [`HASTI_SIZE_WIDTH-1:0]  is_size,
+   output [`HASTI_BUS_WIDTH-1:0]   is_wdata,
+   input [`HASTI_BUS_WIDTH-1:0]    is_rdata,
 
-   output                          ds_hsel,
-   output [`HASTI_ADDR_WIDTH-1:0]  ds_haddr,
-   output                          ds_hwrite,
-   output [`HASTI_SIZE_WIDTH-1:0]  ds_hsize,
-   output [`HASTI_BURST_WIDTH-1:0] ds_hburst,
-   output                          ds_hmastlock,
-   output [`HASTI_PROT_WIDTH-1:0]  ds_hprot,
-   output [`HASTI_TRANS_WIDTH-1:0] ds_htrans,
-   output [`HASTI_BUS_WIDTH-1:0]   ds_hwdata,
-   input [`HASTI_BUS_WIDTH-1:0]    ds_hrdata,
-   input                           ds_hready,
-   input                           ds_hresp,
+   output                          ds_sel,
+   output [`HASTI_ADDR_WIDTH-1:0]  ds_addr,
+   output                          ds_read,
+   output                          ds_write,
+   output [`HASTI_SIZE_WIDTH-1:0]  ds_size,
+   output [`HASTI_BUS_WIDTH-1:0]   ds_wdata,
+   input [`HASTI_BUS_WIDTH-1:0]    ds_rdata,
 
-   output                          ss_hsel,
-   output [`HASTI_ADDR_WIDTH-1:0]  ss_haddr,
-   output                          ss_hwrite,
-   output [`HASTI_SIZE_WIDTH-1:0]  ss_hsize,
-   output [`HASTI_BURST_WIDTH-1:0] ss_hburst,
-   output                          ss_hmastlock,
-   output [`HASTI_PROT_WIDTH-1:0]  ss_hprot,
-   output [`HASTI_TRANS_WIDTH-1:0] ss_htrans,
-   output [`HASTI_BUS_WIDTH-1:0]   ss_hwdata,
-   input [`HASTI_BUS_WIDTH-1:0]    ss_hrdata,
-   input                           ss_hready,
-   input                           ss_hresp
+   output                          ss_sel,
+   output [`HASTI_ADDR_WIDTH-1:0]  ss_addr,
+   output                          ss_read,
+   output                          ss_write,
+   output [`HASTI_SIZE_WIDTH-1:0]  ss_size,
+   output [`HASTI_BURST_WIDTH-1:0] ss_burst,
+   output                          ss_mastlock,
+   output [`HASTI_PROT_WIDTH-1:0]  ss_prot,
+   output [`HASTI_BUS_WIDTH-1:0]   ss_wdata,
+   input [`HASTI_BUS_WIDTH-1:0]    ss_rdata,
+   input                           ss_ready,
+   input                           ss_resp
    );
 
 `define AHB_AREA 14
 //`define AHB_AREA 18
 
-   wire [2:0] im_hsel = ((|im_haddr[`HASTI_ADDR_WIDTH-1:`AHB_AREA+1]) ? 3'b100 :   // [2] system
-                         ( im_haddr[`AHB_AREA])                       ? 3'b010 :   // [1] data
-                                                                        3'b001  )& // [0] inst
-                        {3{(im_htrans == `HASTI_TRANS_NONSEQ)}};
-   wire [2:0] dm_hsel = ((|dm_haddr[`HASTI_ADDR_WIDTH-1:`AHB_AREA+1]) ? 3'b100 :   // [2] system
-                         ( dm_haddr[`AHB_AREA])                       ? 3'b010 :   // [1] data
-                                                                        3'b001  )& // [0] inst
-                        {3{(dm_htrans == `HASTI_TRANS_NONSEQ)}};
-//   wire [2:0] sm_hsel = {sm_haddr[`AHB_AREA] == 1'b1,
-//                         sm_haddr[`AHB_AREA:`AHB_AREA-1] == 2'b01,
-//                         sm_haddr[`AHB_AREA:`AHB_AREA-1] == 2'b00}&
-//                        {3{(sm_htrans == `HASTI_TRANS_NONSEQ)}};
-   
-   assign is_hsel = im_hsel[0]&(im_htrans == `HASTI_TRANS_NONSEQ)|
-                    dm_hsel[0]&(dm_htrans == `HASTI_TRANS_NONSEQ);
-   assign ds_hsel = im_hsel[1]&(im_htrans == `HASTI_TRANS_NONSEQ)|
-                    dm_hsel[1]&(dm_htrans == `HASTI_TRANS_NONSEQ);
-   assign ss_hsel = im_hsel[2]&(im_htrans == `HASTI_TRANS_NONSEQ)|
-                    dm_hsel[2]&(dm_htrans == `HASTI_TRANS_NONSEQ);
+   wire [2:0] im_sel = ((|im_addr[`HASTI_ADDR_WIDTH-1:`AHB_AREA+1]) ? 3'b100 :   // [2] system
+                        ( im_addr[`AHB_AREA])                       ? 3'b010 :   // [1] data
+                                                                      3'b001  )& // [0] inst
+                       {3{(im_read|im_write)}};
+   wire [2:0] dm_sel = ((|dm_addr[`HASTI_ADDR_WIDTH-1:`AHB_AREA+1]) ? 3'b100 :   // [2] system
+                        ( dm_addr[`AHB_AREA])                       ? 3'b010 :   // [1] data
+                                                                      3'b001  )& // [0] inst
+                       {3{(dm_read|dm_write)}};
+
+   assign is_sel = im_sel[0]|dm_sel[0];
+   assign ds_sel = im_sel[1]|dm_sel[1];
+   assign ss_sel = im_sel[2]|dm_sel[2];
   
-   reg [2:0]  im_hsel_l, dm_hsel_l, sm_hsel_l;
+   reg [2:0]  im_sel_l, dm_sel_l, sm_sel_l;
 
-   always @ (posedge hclk)
-     if(~hresetn) im_hsel_l <= 3'b000;
-     else if(im_htrans != `HASTI_TRANS_NONSEQ) im_hsel_l <= 3'b000;
-     else if(im_hready) im_hsel_l <= im_hsel;
-   always @ (posedge hclk)
-     if(~hresetn) dm_hsel_l <= 3'b000;
-     else if(dm_htrans != `HASTI_TRANS_NONSEQ) dm_hsel_l <= 3'b000;
-     else if(dm_hready) dm_hsel_l <= dm_hsel;
-//   always @ (posedge hclk)
-//     if(~hresetn) sm_hsel_l <= 1'b0;
-//     else if(~sm_hready) sm_hsel_l <= sm_hsel;
+   always @ (posedge clk)
+     if(~resetn) im_sel_l <= 3'b000;
+     else if(im_ready) im_sel_l <= im_sel;
+   always @ (posedge clk)
+     if(~resetn) dm_sel_l <= 3'b000;
+     else if(dm_ready) dm_sel_l <= dm_sel;
 
-   assign is_haddr     = (~dm_hsel[0]) ? im_haddr     : dm_haddr;
-   assign is_hwrite    = (~dm_hsel[0]) ? im_hwrite    : dm_hwrite;
-   assign is_hsize     = (~dm_hsel[0]) ? im_hsize     : dm_hsize;
-   assign is_hburst    = (~dm_hsel[0]) ? im_hburst    : dm_hburst;
-   assign is_hmastlock = (~dm_hsel[0]) ? im_hmastlock : dm_hmastlock;
-   assign is_hprot     = (~dm_hsel[0]) ? im_hprot     : dm_hprot;
-   assign is_htrans    = (~dm_hsel[0]) ? im_htrans    : dm_htrans;
-   assign is_hwdata    = (~dm_hsel_l[0]) ? im_hwdata  : dm_hwdata;
+   assign is_addr     = (~dm_sel[0]) ? im_addr     : dm_addr;
+   assign is_read     = (~dm_sel[0]) ? im_read     : dm_read;
+   assign is_write    = (~dm_sel[0]) ? im_write    : dm_write;
+   assign is_size     = (~dm_sel[0]) ? im_size     : dm_size;
+   assign is_wdata    = (~dm_sel[0]) ? im_wdata    : dm_wdata;
    
-   assign ds_haddr     = (~dm_hsel[1]) ? im_haddr     : dm_haddr;
-   assign ds_hwrite    = (~dm_hsel[1]) ? im_hwrite    : dm_hwrite;
-   assign ds_hsize     = (~dm_hsel[1]) ? im_hsize     : dm_hsize;
-   assign ds_hburst    = (~dm_hsel[1]) ? im_hburst    : dm_hburst;
-   assign ds_hmastlock = (~dm_hsel[1]) ? im_hmastlock : dm_hmastlock;
-   assign ds_hprot     = (~dm_hsel[1]) ? im_hprot     : dm_hprot;
-   assign ds_htrans    = (~dm_hsel[1]) ? im_htrans    : dm_htrans;
-   assign ds_hwdata    = (~dm_hsel_l[1]) ? im_hwdata  : dm_hwdata;
+   assign ds_addr     = (~dm_sel[1]) ? im_addr     : dm_addr;
+   assign ds_read     = (~dm_sel[1]) ? im_read     : dm_read;
+   assign ds_write    = (~dm_sel[1]) ? im_write    : dm_write;
+   assign ds_size     = (~dm_sel[1]) ? im_size     : dm_size;
+   assign ds_wdata    = (~dm_sel[1]) ? im_wdata    : dm_wdata;
    
-   assign ss_haddr     = (~dm_hsel[2]) ? im_haddr     : dm_haddr;
-   assign ss_hwrite    = (~dm_hsel[2]) ? im_hwrite    : dm_hwrite;
-   assign ss_hsize     = (~dm_hsel[2]) ? im_hsize     : dm_hsize;
-   assign ss_hburst    = (~dm_hsel[2]) ? im_hburst    : dm_hburst;
-   assign ss_hmastlock = (~dm_hsel[2]) ? im_hmastlock : dm_hmastlock;
-   assign ss_hprot     = (~dm_hsel[2]) ? im_hprot     : dm_hprot;
-   assign ss_htrans    = (~dm_hsel[2]) ? im_htrans    : dm_htrans;
-   assign ss_hwdata    = (~dm_hsel_l[2]) ? im_hwdata  : dm_hwdata;
+   assign ss_addr     = (~dm_sel[2]) ? im_addr     : dm_addr;
+   assign ss_read     = (~dm_sel[2]) ? im_read     : dm_read;
+   assign ss_write    = (~dm_sel[2]) ? im_write    : dm_write;
+   assign ss_size     = (~dm_sel[2]) ? im_size     : dm_size;
+   assign ss_burst    = `HASTI_BURST_SINGLE;
+   assign ss_mastlock = `HASTI_MASTER_NO_LOCK;
+   assign ss_prot     = `HASTI_NO_PROT;
+   assign ss_wdata    = (~dm_sel[2]) ? im_wdata    : dm_wdata;
    
-   assign im_hrdata = (im_hsel_l[2]) ? ss_hrdata : (im_hsel_l[1]) ? ds_hrdata : is_hrdata;
-   assign im_hready = ~((im_hsel[0] & dm_hsel[0])|(im_hsel[1] & dm_hsel[1]));
-   assign im_hresp  = 1'b0;
+   assign im_rdata = (im_sel_l[2]) ? ss_rdata : (im_sel_l[1]) ? ds_rdata : is_rdata;
+   assign im_ready = ~((im_sel[0] & dm_sel[0])|(im_sel[1] & dm_sel[1]));
+   assign im_resp  = 1'b0;
 
-   assign dm_hrdata = (dm_hsel_l[2]) ? ss_hrdata : (dm_hsel_l[1]) ? ds_hrdata : is_hrdata;
-   assign dm_hready = 1'b1;
-   assign dm_hresp  = 1'b0;
+   assign dm_rdata = (dm_sel_l[2]) ? ss_rdata : (dm_sel_l[1]) ? ds_rdata : is_rdata;
+   assign dm_ready = 1'b1;
+   assign dm_resp  = 1'b0;
    
 endmodule // vscale_xbar

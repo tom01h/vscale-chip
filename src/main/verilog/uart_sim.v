@@ -2,20 +2,19 @@
 
 module uart_sim
   (
-   input                             hclk,
-   input                             hresetn,
-   input                             hsel,
-   input [`HASTI_ADDR_WIDTH-1:0]     haddr,
-   input                             hwrite,
-   input [`HASTI_SIZE_WIDTH-1:0]     hsize,
-   input [`HASTI_BURST_WIDTH-1:0]    hburst,
-   input                             hmastlock,
-   input [`HASTI_PROT_WIDTH-1:0]     hprot,
-   input [`HASTI_TRANS_WIDTH-1:0]    htrans,
-   input [`HASTI_BUS_WIDTH-1:0]      hwdata,
-   output reg [`HASTI_BUS_WIDTH-1:0] hrdata,
-   output                            hready,
-   output                            hresp
+   input                             clk,
+   input                             resetn,
+   input [`HASTI_ADDR_WIDTH-1:0]     addr,
+   input                             read,
+   input                             write,
+   input [`HASTI_SIZE_WIDTH-1:0]     size,
+   input [`HASTI_BURST_WIDTH-1:0]    burst,
+   input                             mastlock,
+   input [`HASTI_PROT_WIDTH-1:0]     prot,
+   input [`HASTI_BUS_WIDTH-1:0]      wdata,
+   output reg [`HASTI_BUS_WIDTH-1:0] rdata,
+   output                            ready,
+   output                            resp
    );
 
    reg                               sel;
@@ -26,21 +25,21 @@ module uart_sim
 
    reg [1:0]                         cnt;
 
-   assign hready = 1'b1;
-   assign hresp = 1'b0;
+   assign ready = 1'b1;
+   assign resp = 1'b0;
 
-   always @(posedge hclk) begin
-      if((htrans == `HASTI_TRANS_NONSEQ) & hsel)
-        if((haddr[3:2]==2'b01) & ~hwrite)
+   always @(posedge clk) begin
+      if(read|write)
+        if((addr[3:2]==2'b01) & read)
           if(cnt!=0)
             cnt <= cnt-1;
           else
             cnt <= 0;
         else
           cnt <= 3;
-      sel     <= (htrans == `HASTI_TRANS_NONSEQ) & hsel;
-      address <=  haddr[3:2];
-      casez({hsize[2:0], haddr[1:0]})
+      sel     <= (read|write);
+      address <=  addr[3:2];
+      casez({size[2:0], addr[1:0]})
         5'b000_11 : be <= 4'b1000;
         5'b000_10 : be <= 4'b0100;
         5'b000_01 : be <= 4'b0010;
@@ -50,10 +49,8 @@ module uart_sim
         5'b010_?? : be <= 4'b1111;
         default   : be <= 4'b1111;
       endcase
-      wr      <= hwrite;
-   end
-   always @(*) begin
-      d        = hwdata;
+      wr      <= write;
+      d       <= wdata;
    end
 
    reg [7:0] div0, div1, din_i;
@@ -61,20 +58,23 @@ module uart_sim
    wire      full_o = 1'b0;
    reg       empty_o;
    
-   always @(posedge hclk) begin
-      if (~hresetn)
+   always @(posedge clk) begin
+      if (~resetn)
         div0[7:0] <= 8'h00;
       else if (sel & wr & be[0] & address[3:2] == 2'b00)
         div0[7:0] <= d[7:0];
-      if (~hresetn)
+
+      if (~resetn)
         div1[7:0] <= 8'h00;
       else if (sel & wr & be[1] & address[3:2] == 2'b00)
         div1[7:0] <= d[15:8];
-//      if (~hresetn)
+
+//      if (~resetn)
 //        din_i[7:0] <= 8'h00;
 //      else if (sel & wr & be[0] & address[3:2] == 2'b10)
 //        din_i[7:0] <= d[7:0];
-      if (~hresetn) begin
+
+      if (~resetn) begin
          empty_o = 1'b1;
          dout_o = 8'h00;
       end else if (sel & wr & be[0] & address[3:2] == 2'b11) begin //DUMMY//DUMMY//
@@ -89,10 +89,10 @@ module uart_sim
    end
    always @(*) begin
       case(address[3:2])
-        2'b00 : hrdata = {{16{1'b0}},div1,div0};
-        2'b01 : hrdata = {{24{1'b0}},6'h00,full_o,empty_o};
-        2'b10 : hrdata = {{24{1'b0}},dout_o};
-        default : hrdata = {32{1'bx}};
+        2'b00 : rdata = {{16{1'b0}},div1,div0};
+        2'b01 : rdata = {{24{1'b0}},6'h00,full_o,empty_o};
+        2'b10 : rdata = {{24{1'b0}},dout_o};
+        default : rdata = {32{1'bx}};
       endcase
    end   
 

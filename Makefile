@@ -64,7 +64,6 @@ SIMV_OPTS = -k $(OUT_DIR)/ucli.key -q
 
 CORE_SRCS = $(addprefix $(V_CORE_DIR)/, \
 vscale_core.v \
-vscale_hasti_bridge.v \
 vscale_pipeline.v \
 vscale_ctrl.v \
 vscale_regfile.v \
@@ -79,7 +78,7 @@ vscale_PC_mux.v \
 DESIGN_SRCS = $(addprefix $(V_SRC_DIR)/, \
 vscale_chip.v \
 vscale_xbar.v \
-ahbmem.v \
+timem.v \
 uart_sim.v \
 uart/sasc_brg.v \
 uart/sasc_fifo4.v \
@@ -150,6 +149,7 @@ $(OUT_DIR)/%.verilator.vcd: $(MEM_DIR)/%.ihex $(SIM_DIR)/Vvscale_verilator_top
 $(OUT_DIR)/%.wlf: $(MEM_DIR)/%.ihex $(MODELSIM_DIR)/_vmake
 	mkdir -p output
 	cp $< loadmem.ihex
+	touch ram.data3 ram.data2 ram.data1 ram.data0
 	$(VSIM) $(VSIM_OPTS)
 	mv transcript $@.log
 	mv vsim.wlf $@

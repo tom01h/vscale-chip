@@ -33,10 +33,10 @@ module vscale_verilator_top(
    reg htif_pcr_resp_valid;
    reg [`HTIF_PCR_WIDTH-1:0] htif_pcr_resp_data;
 
-   always @(posedge clk)
-     htif_pcr_resp_valid <= DUT.chip.vscale.dmem_en & (DUT.chip.vscale.dmem_addr == 32'h00001000)& DUT.chip.vscale.dmem_wen;
-   always @ (DUT.chip.vscale.dmem_wdata_delayed)
-     htif_pcr_resp_data = DUT.chip.vscale.dmem_wdata_delayed;
+   always @(posedge clk)begin
+      htif_pcr_resp_valid <= DUT.chip.vscale.dmem_write & (DUT.chip.vscale.dmem_addr == 32'h00001000);
+      htif_pcr_resp_data <= DUT.chip.vscale.dmem_wdata;
+   end
 
    always @(posedge clk) begin
       trace_count = trace_count + 1;

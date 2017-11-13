@@ -92,7 +92,7 @@ int main(int argc, char **argv, char **env) {
         if((verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__sel)&
            (verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__wr)&
            (verilator_top->v__DOT__DUT__DOT__chip__DOT__uart__DOT__address==2)){
-          putc((char)verilator_top->v__DOT__DUT__DOT__chip__DOT__ss_hwdata, stdout);
+          putc((char)verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__d, stdout);
         }
         if((verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__sel)&
            (~verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__wr)&
@@ -111,12 +111,12 @@ int main(int argc, char **argv, char **env) {
         if((verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__sel)&
            (verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__wr)&
            (verilator_top->v__DOT__DUT__DOT__chip__DOT__uart__DOT__address==2)){
-          if(verilator_top->v__DOT__DUT__DOT__chip__DOT__ss_hwdata==0x15){
+          if(verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__d==0x15){
             xmodem = -3;
             block = 1;
             fp = fopen("xmodem.dat", "rb");
           }else{
-            putc((char)verilator_top->v__DOT__DUT__DOT__chip__DOT__ss_hwdata, stdout);
+            putc((char)verilator_top->v__DOT__DUT__DOT__chip__DOT__uart__DOT__d, stdout);
           }
         }
       }else if(xmodem == -3){ // send SOH
@@ -161,7 +161,7 @@ int main(int argc, char **argv, char **env) {
         if((verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__sel)&
            (verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__wr)&
            (verilator_top->v__DOT__DUT__DOT__chip__DOT__uart__DOT__address==2)&
-           (verilator_top->v__DOT__DUT__DOT__chip__DOT__ss_hwdata==0x06)){
+           (verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__d==0x06)){
           if(num == 128){
             xmodem = -3;
             block++;
@@ -180,7 +180,7 @@ int main(int argc, char **argv, char **env) {
         if((verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__sel)&
            (verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__wr)&
            (verilator_top->v__DOT__DUT__DOT__chip__DOT__uart__DOT__address==2)&
-           (verilator_top->v__DOT__DUT__DOT__chip__DOT__ss_hwdata==0x06)){
+           (verilator_top->v__DOT__DUT__DOT__chip__DOT__uart_sim__DOT__d==0x06)){
           xmodem = -6;
         }
       }

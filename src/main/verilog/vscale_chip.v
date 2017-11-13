@@ -12,68 +12,52 @@ module vscale_chip
    wire   reset = ~rstn;
    wire   resetn;
 
-   wire [`HASTI_ADDR_WIDTH-1:0]  im_haddr;
-   wire                          im_hwrite;
-   wire [`HASTI_SIZE_WIDTH-1:0]  im_hsize;
-   wire [`HASTI_BURST_WIDTH-1:0] im_hburst;
-   wire                          im_hmastlock;
-   wire [`HASTI_PROT_WIDTH-1:0]  im_hprot;
-   wire [`HASTI_TRANS_WIDTH-1:0] im_htrans;
-   wire [`HASTI_BUS_WIDTH-1:0]   im_hwdata;
-   wire [`HASTI_BUS_WIDTH-1:0]   im_hrdata;
-   wire                          im_hready;
-   wire [`HASTI_RESP_WIDTH-1:0]  im_hresp;
+   wire [`HASTI_ADDR_WIDTH-1:0]  im_addr;
+   wire                          im_read;
+   wire                          im_write;
+   wire [`HASTI_SIZE_WIDTH-1:0]  im_size;
+   wire [`HASTI_BUS_WIDTH-1:0]   im_wdata;
+   wire [`HASTI_BUS_WIDTH-1:0]   im_rdata;
+   wire                          im_ready;
+   wire [`HASTI_RESP_WIDTH-1:0]  im_resp;
 
-   wire [`HASTI_ADDR_WIDTH-1:0]  dm_haddr;
-   wire                          dm_hwrite;
-   wire [`HASTI_SIZE_WIDTH-1:0]  dm_hsize;
-   wire [`HASTI_BURST_WIDTH-1:0] dm_hburst;
-   wire                          dm_hmastlock;
-   wire [`HASTI_PROT_WIDTH-1:0]  dm_hprot;
-   wire [`HASTI_TRANS_WIDTH-1:0] dm_htrans;
-   wire [`HASTI_BUS_WIDTH-1:0]   dm_hwdata;
-   wire [`HASTI_BUS_WIDTH-1:0]   dm_hrdata;
-   wire                          dm_hready;
-   wire [`HASTI_RESP_WIDTH-1:0]  dm_hresp;
+   wire [`HASTI_ADDR_WIDTH-1:0]  dm_addr;
+   wire                          dm_read;
+   wire                          dm_write;
+   wire [`HASTI_SIZE_WIDTH-1:0]  dm_size;
+   wire [`HASTI_BUS_WIDTH-1:0]   dm_wdata;
+   wire [`HASTI_BUS_WIDTH-1:0]   dm_rdata;
+   wire                          dm_ready;
+   wire [`HASTI_RESP_WIDTH-1:0]  dm_resp;
 
-   wire                          is_hsel;
-   wire [`HASTI_ADDR_WIDTH-1:0]  is_haddr;
-   wire                          is_hwrite;
-   wire [`HASTI_SIZE_WIDTH-1:0]  is_hsize;
-   wire [`HASTI_BURST_WIDTH-1:0] is_hburst;
-   wire                          is_hmastlock;
-   wire [`HASTI_PROT_WIDTH-1:0]  is_hprot;
-   wire [`HASTI_TRANS_WIDTH-1:0] is_htrans;
-   wire [`HASTI_BUS_WIDTH-1:0]   is_hwdata;
-   wire [`HASTI_BUS_WIDTH-1:0]   is_hrdata;
-   wire                          is_hready;
-   wire [`HASTI_RESP_WIDTH-1:0]  is_hresp;
+   wire                          is_sel;
+   wire [`HASTI_ADDR_WIDTH-1:0]  is_addr;
+   wire                          is_read;
+   wire                          is_write;
+   wire [`HASTI_SIZE_WIDTH-1:0]  is_size;
+   wire [`HASTI_BUS_WIDTH-1:0]   is_wdata;
+   wire [`HASTI_BUS_WIDTH-1:0]   is_rdata;
 
-   wire                          ds_hsel;
-   wire [`HASTI_ADDR_WIDTH-1:0]  ds_haddr;
-   wire                          ds_hwrite;
-   wire [`HASTI_SIZE_WIDTH-1:0]  ds_hsize;
-   wire [`HASTI_BURST_WIDTH-1:0] ds_hburst;
-   wire                          ds_hmastlock;
-   wire [`HASTI_PROT_WIDTH-1:0]  ds_hprot;
-   wire [`HASTI_TRANS_WIDTH-1:0] ds_htrans;
-   wire [`HASTI_BUS_WIDTH-1:0]   ds_hwdata;
-   wire [`HASTI_BUS_WIDTH-1:0]   ds_hrdata;
-   wire                          ds_hready;
-   wire [`HASTI_RESP_WIDTH-1:0]  ds_hresp;
+   wire                          ds_sel;
+   wire [`HASTI_ADDR_WIDTH-1:0]  ds_addr;
+   wire                          ds_read;
+   wire                          ds_write;
+   wire [`HASTI_SIZE_WIDTH-1:0]  ds_size;
+   wire [`HASTI_BUS_WIDTH-1:0]   ds_wdata;
+   wire [`HASTI_BUS_WIDTH-1:0]   ds_rdata;
 
-   wire                          ss_hsel;
-   wire [`HASTI_ADDR_WIDTH-1:0]  ss_haddr;
-   wire                          ss_hwrite;
-   wire [`HASTI_SIZE_WIDTH-1:0]  ss_hsize;
-   wire [`HASTI_BURST_WIDTH-1:0] ss_hburst;
-   wire                          ss_hmastlock;
-   wire [`HASTI_PROT_WIDTH-1:0]  ss_hprot;
-   wire [`HASTI_TRANS_WIDTH-1:0] ss_htrans;
-   wire [`HASTI_BUS_WIDTH-1:0]   ss_hwdata;
-   wire [`HASTI_BUS_WIDTH-1:0]   ss_hrdata;
-   wire                          ss_hready;
-   wire [`HASTI_RESP_WIDTH-1:0]  ss_hresp;
+   wire                          ss_sel;
+   wire [`HASTI_ADDR_WIDTH-1:0]  ss_addr;
+   wire                          ss_read;
+   wire                          ss_write;
+   wire [`HASTI_SIZE_WIDTH-1:0]  ss_size;
+   wire [`HASTI_BURST_WIDTH-1:0] ss_burst;
+   wire                          ss_mastlock;
+   wire [`HASTI_PROT_WIDTH-1:0]  ss_prot;
+   wire [`HASTI_BUS_WIDTH-1:0]   ss_wdata;
+   wire [`HASTI_BUS_WIDTH-1:0]   ss_rdata;
+   wire                          ss_ready;
+   wire [`HASTI_RESP_WIDTH-1:0]  ss_resp;
 
    assign resetn = ~reset;
 
@@ -81,173 +65,135 @@ module vscale_chip
                       .clk(clk),
                       .reset(reset),
                       .ext_interrupts(`N_EXT_INTS'b0),
-                      .imem_haddr(im_haddr),
-                      .imem_hwrite(im_hwrite),
-                      .imem_hsize(im_hsize),
-                      .imem_hburst(im_hburst),
-                      .imem_hmastlock(im_hmastlock),
-                      .imem_hprot(im_hprot),
-                      .imem_htrans(im_htrans),
-                      .imem_hwdata(im_hwdata),
-                      .imem_hrdata(im_hrdata),
-                      .imem_hready(im_hready),
-                      .imem_hresp(im_hresp),
-                      .dmem_haddr(dm_haddr),
-                      .dmem_hwrite(dm_hwrite),
-                      .dmem_hsize(dm_hsize),
-                      .dmem_hburst(dm_hburst),
-                      .dmem_hmastlock(dm_hmastlock),
-                      .dmem_hprot(dm_hprot),
-                      .dmem_htrans(dm_htrans),
-                      .dmem_hwdata(dm_hwdata),
-                      .dmem_hrdata(dm_hrdata),
-                      .dmem_hready(dm_hready),
-                      .dmem_hresp(dm_hresp)
+                      .imem_addr(im_addr),
+                      .imem_read(im_read),
+                      .imem_write(im_write),
+                      .imem_size(im_size),
+                      .imem_wdata(im_wdata),
+                      .imem_rdata(im_rdata),
+                      .imem_ready(im_ready),
+                      .imem_resp(im_resp),
+                      .dmem_addr(dm_addr),
+                      .dmem_read(dm_read),
+                      .dmem_write(dm_write),
+                      .dmem_size(dm_size),
+                      .dmem_wdata(dm_wdata),
+                      .dmem_rdata(dm_rdata),
+                      .dmem_ready(dm_ready),
+                      .dmem_resp(dm_resp)
                       );
 
    vscale_xbar vscale_xbar(
-                           .hclk(clk),
-                           .hresetn(resetn),
+                           .clk(clk),
+                           .resetn(resetn),
 
-                           .im_haddr(im_haddr),
-                           .im_hwrite(im_hwrite),
-                           .im_hsize(im_hsize),
-                           .im_hburst(im_hburst),
-                           .im_hmastlock(im_hmastlock),
-                           .im_hprot(im_hprot),
-                           .im_htrans(im_htrans),
-                           .im_hwdata(im_hwdata),
-                           .im_hrdata(im_hrdata),
-                           .im_hready(im_hready),
-                           .im_hresp(im_hresp),
+                           .im_addr(im_addr),
+                           .im_read(im_read),
+                           .im_write(im_write),
+                           .im_size(im_size),
+                           .im_wdata(im_wdata),
+                           .im_rdata(im_rdata),
+                           .im_ready(im_ready),
+                           .im_resp(im_resp),
 
-                           .dm_haddr(dm_haddr),
-                           .dm_hwrite(dm_hwrite),
-                           .dm_hsize(dm_hsize),
-                           .dm_hburst(dm_hburst),
-                           .dm_hmastlock(dm_hmastlock),
-                           .dm_hprot(dm_hprot),
-                           .dm_htrans(dm_htrans),
-                           .dm_hwdata(dm_hwdata),
-                           .dm_hrdata(dm_hrdata),
-                           .dm_hready(dm_hready),
-                           .dm_hresp(dm_hresp),
+                           .dm_addr(dm_addr),
+                           .dm_read(dm_read),
+                           .dm_write(dm_write),
+                           .dm_size(dm_size),
+                           .dm_wdata(dm_wdata),
+                           .dm_rdata(dm_rdata),
+                           .dm_ready(dm_ready),
+                           .dm_resp(dm_resp),
 
-                           .is_hsel(is_hsel),
-                           .is_haddr(is_haddr),
-                           .is_hwrite(is_hwrite),
-                           .is_hsize(is_hsize),
-                           .is_hburst(is_hburst),
-                           .is_hmastlock(is_hmastlock),
-                           .is_hprot(is_hprot),
-                           .is_htrans(is_htrans),
-                           .is_hwdata(is_hwdata),
-                           .is_hrdata(is_hrdata),
-                           .is_hready(is_hready),
-                           .is_hresp(is_hresp),
+                           .is_sel(is_sel),
+                           .is_addr(is_addr),
+                           .is_read(is_read),
+                           .is_write(is_write),
+                           .is_size(is_size),
+                           .is_wdata(is_wdata),
+                           .is_rdata(is_rdata),
       
-                           .ds_hsel(ds_hsel),
-                           .ds_haddr(ds_haddr),
-                           .ds_hwrite(ds_hwrite),
-                           .ds_hsize(ds_hsize),
-                           .ds_hburst(ds_hburst),
-                           .ds_hmastlock(ds_hmastlock),
-                           .ds_hprot(ds_hprot),
-                           .ds_htrans(ds_htrans),
-                           .ds_hwdata(ds_hwdata),
-                           .ds_hrdata(ds_hrdata),
-                           .ds_hready(ds_hready),
-                           .ds_hresp(ds_hresp),
+                           .ds_sel(ds_sel),
+                           .ds_addr(ds_addr),
+                           .ds_read(ds_read),
+                           .ds_write(ds_write),
+                           .ds_size(ds_size),
+                           .ds_wdata(ds_wdata),
+                           .ds_rdata(ds_rdata),
       
-                           .ss_hsel(ss_hsel),
-                           .ss_haddr(ss_haddr),
-                           .ss_hwrite(ss_hwrite),
-                           .ss_hsize(ss_hsize),
-                           .ss_hburst(ss_hburst),
-                           .ss_hmastlock(ss_hmastlock),
-                           .ss_hprot(ss_hprot),
-                           .ss_htrans(ss_htrans),
-                           .ss_hwdata(ss_hwdata),
-                           .ss_hrdata(ss_hrdata),
-                           .ss_hready(ss_hready),
-                           .ss_hresp(ss_hresp)
+                           .ss_sel(ss_sel),
+                           .ss_addr(ss_addr),
+                           .ss_read(ss_read),
+                           .ss_write(ss_write),
+                           .ss_size(ss_size),
+                           .ss_burst(ss_burst),
+                           .ss_mastlock(ss_mastlock),
+                           .ss_prot(ss_prot),
+                           .ss_wdata(ss_wdata),
+                           .ss_rdata(ss_rdata),
+                           .ss_ready(ss_ready),
+                           .ss_resp(ss_resp)
                            );
 
-   ahbmem imem(
-               .hclk(clk),
-               .hresetn(resetn),
-               .hsel(is_hsel),
-               .haddr(is_haddr),
-               .hwrite(is_hwrite),
-               .hsize(is_hsize),
-               .hburst(is_hburst),
-               .hmastlock(is_hmastlock),
-               .hprot(is_hprot),
-               .htrans(is_htrans),
-               .hwdata(is_hwdata),
-               .hrdata(is_hrdata),
-               .hready(is_hready),
-               .hresp(is_hresp)
+   timem imem(
+               .clk(clk),
+               .addr(is_addr),
+               .read(is_read&is_sel),
+               .write(is_write&is_sel),
+               .size(is_size),
+               .wdata(is_wdata),
+               .rdata(is_rdata)
                );
 
-   ahbmem dmem(
-               .hclk(clk),
-               .hresetn(resetn),
-               .hsel(ds_hsel),
-               .haddr(ds_haddr),
-               .hwrite(ds_hwrite),
-               .hsize(ds_hsize),
-               .hburst(ds_hburst),
-               .hmastlock(ds_hmastlock),
-               .hprot(ds_hprot),
-               .htrans(ds_htrans),
-               .hwdata(ds_hwdata),
-               .hrdata(ds_hrdata),
-               .hready(ds_hready),
-               .hresp(ds_hresp)
+   timem dmem(
+               .clk(clk),
+               .addr(ds_addr),
+               .read(ds_read&ds_sel),
+               .write(ds_write&ds_sel),
+               .size(ds_size),
+               .wdata(ds_wdata),
+               .rdata(ds_rdata)
                );
 
-   wire [`HASTI_BUS_WIDTH-1:0]   uart_hrdata;
-   wire [`HASTI_BUS_WIDTH-1:0]   uart_sim_hrdata;
+   wire [`HASTI_BUS_WIDTH-1:0]   uart_rdata;
+   wire [`HASTI_BUS_WIDTH-1:0]   uart_sim_rdata;
    reg                           uart_sel;
    always @ (posedge clk) //TEMP//TEMP//hready
-     uart_sel <= ss_haddr[4];
-   assign ss_hrdata = (uart_sel) ? uart_sim_hrdata : uart_hrdata ;
+     uart_sel <= ss_addr[4];
+   assign ss_rdata = (uart_sel) ? uart_sim_rdata : uart_rdata ;
 
    uart uart(
-             .hclk(clk),
-             .hresetn(resetn),
-             .hsel(ss_hsel&~ss_haddr[4]),
-             .haddr(ss_haddr),
-             .hwrite(ss_hwrite),
-             .hsize(ss_hsize),
-             .hburst(ss_hburst),
-             .hmastlock(ss_hmastlock),
-             .hprot(ss_hprot),
-             .htrans(ss_htrans),
-             .hwdata(ss_hwdata),
-             .hrdata(uart_hrdata),
-             .hready(ss_hready),
-             .hresp(ss_hresp),
+             .clk(clk),
+             .resetn(resetn),
+             .addr(ss_addr),
+             .read(ss_read&ss_sel&~ss_addr[4]),
+             .write(ss_write&ss_sel&~ss_addr[4]),
+             .size(ss_size),
+             .burst(ss_burst),
+             .mastlock(ss_mastlock),
+             .prot(ss_prot),
+             .wdata(ss_wdata),
+             .rdata(uart_rdata),
+             .ready(ss_ready),
+             .resp(ss_resp),
              .RXD(RXD),
              .TXD(TXD)
              );
 
    uart_sim uart_sim(
-             .hclk(clk),
-             .hresetn(resetn),
-             .hsel(ss_hsel&ss_haddr[4]),
-             .haddr(ss_haddr),
-             .hwrite(ss_hwrite),
-             .hsize(ss_hsize),
-             .hburst(ss_hburst),
-             .hmastlock(ss_hmastlock),
-             .hprot(ss_hprot),
-             .htrans(ss_htrans),
-             .hwdata(ss_hwdata),
-             .hrdata(uart_sim_hrdata),
-             .hready(),
-             .hresp()
+             .clk(clk),
+             .resetn(resetn),
+             .addr(ss_addr),
+             .read(ss_read&ss_sel&ss_addr[4]),
+             .write(ss_write&ss_sel&ss_addr[4]),
+             .size(ss_size),
+             .burst(ss_burst),
+             .mastlock(ss_mastlock),
+             .prot(ss_prot),
+             .wdata(ss_wdata),
+             .rdata(uart_sim_rdata),
+             .ready(),
+             .resp()
              );
 
 endmodule // vscale_sim_top
