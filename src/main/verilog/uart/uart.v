@@ -97,8 +97,8 @@ module uart
    
    sasc_top top
      (
-      .clk(hclk),
-      .rst(hresetn),
+      .clk(clk),
+      .rst(resetn),
       .rxd_i(RXD),
       .txd_o(TXD),
       .cts_i(1'b0),
@@ -115,8 +115,8 @@ module uart
 
    sasc_brg brg
      (
-      .clk(hclk),
-      .rst(hresetn),
+      .clk(clk),
+      .rst(resetn),
       .div0(div0),
       .div1(div1),
       .sio_ce(sio_ce),
